@@ -1,26 +1,53 @@
 document.addEventListener('DOMContentLoaded', () => {
     const billInput = document.getElementById('bill');
+    const tipSlider = document.getElementById('tip-slider');
     const tipInput = document.getElementById('tip');
-    const tipAmountDisplay = document.getElementById('tip-amount');
-    const totalAmountDisplay = document.getElementById('total-amount');
+    const peopleInput = document.getElementById('people');
 
-    function calculateTip() {
-        const bill = parseFloat(billInput.value);
-        const tipPercent = parseFloat(tipInput.value);
+    const tipPerPersonDisplay = document.getElementById('tip-per-person');
+    const totalPerPersonDisplay = document.getElementById('total-per-person');
+    const totalBillDisplay = document.getElementById('total-bill');
 
-        if (isNaN(bill) || bill <= 0) {
-            tipAmountDisplay.textContent = '$0.00';
-            totalAmountDisplay.textContent = '$0.00';
-            return;
-        }
+    function calculate() {
+        const bill = parseFloat(billInput.value) || 0;
+        const tipPercent = parseFloat(tipInput.value) || 0;
+        const people = parseInt(peopleInput.value) || 1;
 
-        const tipAmount = bill * (tipPercent / 100);
-        const totalAmount = bill + tipAmount;
+        if (bill < 0) return;
 
-        tipAmountDisplay.textContent = `$${tipAmount.toFixed(2)}`;
-        totalAmountDisplay.textContent = `$${totalAmount.toFixed(2)}`;
+        const totalTip = bill * (tipPercent / 100);
+        const totalWithTip = bill + totalTip;
+        
+        const tipPerPerson = totalTip / people;
+        const totalPerPerson = totalWithTip / people;
+
+        // Actualizar UI
+        tipPerPersonDisplay.textContent = `$${tipPerPerson.toFixed(2)}`;
+        totalPerPersonDisplay.textContent = `$${totalPerPerson.toFixed(2)}`;
+        totalBillDisplay.textContent = `$${totalWithTip.toFixed(2)}`;
     }
 
-    billInput.addEventListener('input', calculateTip);
-    tipInput.addEventListener('input', calculateTip);
+    // Sincronizar Slider e Input de Propina
+    tipSlider.addEventListener('input', (e) => {
+        tipInput.value = e.target.value;
+        calculate();
+    });
+
+    tipInput.addEventListener('input', (e) => {
+        let value = e.target.value;
+        if (value > 100) value = 100;
+        if (value < 0) value = 0;
+        tipSlider.value = value;
+        calculate();
+    });
+
+    // Eventos para otros campos
+    billInput.addEventListener('input', calculate);
+    peopleInput.addEventListener('input', () => {
+        if (peopleInput.value < 1) peopleInput.value = 1;
+        calculate();
+    });
+
+    // Inicializar
+    calculate();
 });
